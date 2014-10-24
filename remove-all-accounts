@@ -1,0 +1,28 @@
+#!/bin/bash
+
+dbpw=PW_FOR_DB_ROOT_USER_HERE
+
+#Removes the wordpress folder from extracting and the tar file downloaded
+rm -rf ~/wordpress
+rm -f ~/latest.tar.gz
+
+while read user
+do
+        echo -n Removing all traces of $user ....." "
+
+        #Deletes the user's apache directory
+        rm -rf /var/www/html/$user
+
+        #Deletes the user's database and mysql account
+        mysql -uroot -p$dbpw -e "drop database $user";
+        mysql -uroot -p$dbpw -e "drop user $user@localhost"
+
+        #Deletes the virtual host file for the user
+        rm -f /etc/httpd/conf.d/"$user".conf
+        echo Done
+done < <(ls -1 /var/www/html)
+
+mysql -uroot -p$dbpw -e "flush privileges"
+systemctl restart httpd.service
+
+echo Script complete!
