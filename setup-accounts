@@ -1,0 +1,134 @@
+#!/bin/bash
+
+dbpw=PW_FOR_DB_ROOT_USER_HERE
+#Used to keep track of if wordpress has already been downloaded/extracted so it only happens a max of once
+wp=0
+#Arrays used to send an email to notify someone to add/remove entries to DNS
+declare -a add
+declare -a remove
+
+#Reads each line from the file "students" in the same directory that the script is running from. Each line is input into the variable "user" one by one.
+while read user
+do
+        #Checks to see if the user already exists by searching for its virtual host file
+        if [ -f /etc/httpd/conf.d/"$user".conf ]; then
+                echo $user already exists ...
+        #If user doesn't exist then set everything up for him/her
+        else
+                #Download and extract wordpress. Deletes current downloaded wordpress files if they exist in case they are out of date
+                #Only downloads if a user needs to be set up. Only downloads once instead of for each user. Kept track of with $wp
+                if [ $wp -eq 0 ]; then
+                        echo -n Downloading and extracting latest version of WordPress ....." "
+                        rm -rf ~/wordpress
+                        rm -f ~/latest.tar.gz
+                        wget -q http://wordpress.org/latest.tar.gz
+                        tar xzf latest.tar.gz
+                        cp ~/wordpress/wp-config-sample.php ~/wordpress/wp-config.php
+                        wp=$[$wp-1]
+                        echo Done
+                fi
+
+                echo -n Setting everything up for $user ....." "
+
+                #Creates a directory for the user and copies wordpress to it
+                mkdir /var/www/html/$user
+                cp -r ~/wordpress/* /var/www/html/$user/
+
+                #Creates a backup directory for the user
+                #You will need to create the directory /backups
+                mkdir /backups/$user
+
+                #Create a random 16 character password for the user's database account
+                pw=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c 16)
+
+                #Add database info to wordpress config in user's
+                sed -ie "s/database_name_here/$user/" /var/www/html/$user/wp-config.php
+                sed -ie "s/username_here/$user/" /var/www/html/$user/wp-config.php
+                sed -ie "s/password_here/$pw/" /var/www/html/$user/wp-config.php
+
+                #Creates a database and a mysql account for the user. Sets the password to the random password generated and grants them all privileges to their database
+                mysql -uroot -p$dbpw -e "create database $user"
+                mysql -uroot -p$dbpw -e "create user $user@localhost"
+                mysql -uroot -p$dbpw -e "set password for $user@localhost= password('$pw');"
+                mysql -uroot -p$dbpw -e "grant all privileges on $user.* to $user@localhost identified by '$pw'"
+
+                #Create Virtual Host file
+                echo "<VirtualHost *:80>" >>  /etc/httpd/conf.d/"$user".conf
+                echo ServerName "$user".baystate.edu >> /etc/httpd/conf.d/"$user".conf
+                echo DocumentRoot /var/www/html/$user >> /etc/httpd/conf.d/"$user".conf
+                echo "</VirtualHost>" >> /etc/httpd/conf.d/"$user".conf
+
+                #Adds user to array "add". Used later to send email saying to add entry for user to DNS
+                add+=("$user")
+
+                echo Done
+        fi
+done <students
+
+
+students=$(more students | wc -l)
+html=$(ls -d /var/www/html/*/ | wc -l)
+
+#Checks to see if there are more folders in the apache directory than there are students
+#This would happen when a student is removed from the class list
+if [ $students -lt $html ]; then
+#There are apache folders that need to be removed. Let's find out which one
+        echo There are unnecessary student folders in /var/www/html which need to be deleted. "Let's" figure out which "one(s)"...
+
+        #Checking for existence of student with apache folder name one by one
+        while read folder
+        do
+                #searches the file students for the name of the apache folder
+                if ! grep -Fxq "$folder" students
+                then
+                        echo WE FOUND THE CULPRIT! Removing all traces of $folder ...
+                        #Deletes the user's apache directory
+                        rm -rf /var/www/html/$folder
+
+                        #Deletes the user's database and mysql account
+                        mysql -uroot -p$dbpw -e "drop database $folder";
+                        mysql -uroot -p$dbpw -e "drop user $folder@localhost"
+
+                        #Deletes the virtual host file for the user
+                        rm -f /etc/httpd/conf.d/"$folder".conf
+
+                        #Adds user to array "remove". Used later to send email saying to remove entry for user in DNS
+                        remove+=("$folder")
+
+                        echo Done
+                fi
+        #This is listing all directories in /var/www/html line by line. Needed to use cut to extract only the folder names and not the whole paths
+        done < <(ls -1d /var/www/html/*/ | cut -d '/' -f5)
+
+#There aren't less students than apache folders so we're good
+else
+        echo Everything looks good!
+fi
+
+
+#Give apache ownership of everything in the apache directory and the virtual host files
+chown -R apache:apache /var/www/html/*
+chown -R apache:apache /etc/httpd/conf.d/*
+#Refresh the mysql privileges so everything takes effect immediately
+mysql -uroot -p$dbpw -e "flush privileges"
+#Restart apache so the virtual host files are loaded
+systemctl restart httpd.service
+
+#Runs the backup script. Comment the following line if you don't want that script to be run
+./backup
+
+#Sends email reporting users that need to be added or removed in DNS
+#If the arrays "add" and "remove" are both empty then it does nothing.
+#If one of the arrays is empty it will set the empty one to "none" and then send an email
+if [ ! ${#add[*]} -eq 0 ] || [ ! ${#remove[*]} -eq 0 ]; then
+        if [ ${#add[*]} -eq 0 ]; then
+                add+=("none")
+        else
+                remove+=("none")
+        fi
+        echo -e Add to DNS: ${add[*]} "\n"Remove from DNS: ${remove[*]} | mail -s "Update DNS for SERVER_NAME_HERE" email@example.com
+        echo Email sent!
+fi
+
+
+echo Script complete!
