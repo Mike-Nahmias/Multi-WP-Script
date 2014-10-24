@@ -1,0 +1,19 @@
+#!/bin/bash
+
+dbpw=PW_FOR_DB_ROOT_USER_HERE
+
+#Loops through every folder in the apache root directory
+while read folder
+do
+        #Backups every folder in the apache directory to their folder in /backups
+        tar -C /var/www/html/ -cpf /backups/$folder/"$folder.backup.$(date +%m-%d-%Y).tar" $folder
+
+        #Backs up each database, zips it, then deletes the initial sql file
+        mysqldump -p$dbpw $folder > /backups/$folder/"$folder.backup.$(date +%m-%d-%Y)".sql
+        tar -cpf /backups/$folder/"$folder.backup.$(date +%m-%d-%Y).sql.tar" /backups/$folder/"$folder.backup.$(date +%m-%d-%Y)".sql
+        rm -f /backups/$folder/"$folder.backup.$(date +%m-%d-%Y)".sql
+done < <(ls -1d /var/www/html/*/ | cut -d '/' -f5)
+
+
+#Deletes anything in the /backups folder that is a file (as opposed to a directory) and is 3 weeks old
+find /backups -type f -mmin +30240 -delete
