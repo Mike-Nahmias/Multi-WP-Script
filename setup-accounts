@@ -54,7 +54,7 @@ do
 
                 #Create Virtual Host file
                 echo "<VirtualHost *:80>" >>  /etc/httpd/conf.d/"$user".conf
-                echo ServerName "$user".baystate.edu >> /etc/httpd/conf.d/"$user".conf
+                echo ServerName "$user".domain.com >> /etc/httpd/conf.d/"$user".conf
                 echo DocumentRoot /var/www/html/$user >> /etc/httpd/conf.d/"$user".conf
                 echo "</VirtualHost>" >> /etc/httpd/conf.d/"$user".conf
 
