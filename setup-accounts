@@ -7,7 +7,8 @@ wp=0
 declare -a add
 declare -a remove
 
-#Reads each line from the file "students" in the same directory that the script is running from. Each line is input into the variable "user" one by one.
+#Reads each line from the file "students" in the same directory that the script is running from. Each line is input
+#into the variable "user" one by one.
 while read user
 do
         #Checks to see if the user already exists by searching for its virtual host file
@@ -15,8 +16,10 @@ do
                 echo $user already exists ...
         #If user doesn't exist then set everything up for him/her
         else
-                #Download and extract wordpress. Deletes current downloaded wordpress files if they exist in case they are out of date
-                #Only downloads if a user needs to be set up. Only downloads once instead of for each user. Kept track of with $wp
+                #Download and extract wordpress. Deletes current downloaded wordpress files if they exist in case
+                        #they are out of date
+                #Only downloads if a user needs to be set up. Only downloads once instead of for each user.
+                        #Kept track of with $wp
                 if [ $wp -eq 0 ]; then
                         echo -n Downloading and extracting latest version of WordPress ....." "
                         rm -rf ~/wordpress
@@ -46,7 +49,8 @@ do
                 sed -ie "s/username_here/$user/" /var/www/html/$user/wp-config.php
                 sed -ie "s/password_here/$pw/" /var/www/html/$user/wp-config.php
 
-                #Creates a database and a mysql account for the user. Sets the password to the random password generated and grants them all privileges to their database
+                #Creates a database and a mysql account for the user. Sets the password to the random password
+                        #generated and grants them all privileges to their database
                 mysql -uroot -p$dbpw -e "create database $user"
                 mysql -uroot -p$dbpw -e "create user $user@localhost"
                 mysql -uroot -p$dbpw -e "set password for $user@localhost= password('$pw');"
@@ -97,7 +101,8 @@ if [ $students -lt $html ]; then
 
                         echo Done
                 fi
-        #This is listing all directories in /var/www/html line by line. Needed to use cut to extract only the folder names and not the whole paths
+        #This is listing all directories in /var/www/html line by line.
+                #Needed to use cut to extract only the folder names and not the whole paths
         done < <(ls -1d /var/www/html/*/ | cut -d '/' -f5)
 
 #There aren't less students than apache folders so we're good
@@ -126,7 +131,7 @@ if [ ! ${#add[*]} -eq 0 ] || [ ! ${#remove[*]} -eq 0 ]; then
         else
                 remove+=("none")
         fi
-        echo -e Add to DNS: ${add[*]} "\n"Remove from DNS: ${remove[*]} | mail -s "Update DNS for SERVER_NAME_HERE" email@example.com
+        echo -e Add to DNS: ${add[*]} "\n"Remove from DNS: ${remove[*]} | mail -s "Update DNS for WordPress Server" email@example.com
         echo Email sent!
 fi
 
