@@ -9,6 +9,11 @@ Important things to note:
 - You will need to create the directory "/backups" if you plan on using that feature (Or you can modify the code to change the location completely)
 - The scripts need to be in the same location
 - If you copy or download the scripts you will need to make them executable (chmod +x script_name) except for "students", that is just a text file
+- MAKE SURE YOU DON'T HAVE ANY OTHER FOLDERS IN /var/www/html/
+  - This script will delete any folders in that directory that don't match the user list
+  - Files are fine to have there
+  - If you need to have other folders in apache's root directory, you will need to add additional code in the script for error checking
+
 
 What these scripts do in detail:
 - Put whatever accounts you want to have setup on the box in the file "students"
