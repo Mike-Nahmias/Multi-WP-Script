@@ -13,6 +13,7 @@ Important things to note:
   - This script will delete any folders in that directory that don't match the user list
   - Files are fine to have there
   - If you need to have other folders in apache's root directory, you will need to add additional code in the script for error checking
+    - To get around this you need to add another nested if/else on line 88. This would basically be: if folder name matches (folder_to_keep or another_folder_to_keep) then do nothing. Otherwise, continue with commands to remove everything.
 
 
 What these scripts do in detail:
