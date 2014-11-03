@@ -13,7 +13,8 @@ Important things to note:
   - This script will delete any folders in that directory that don't match the user list
   - Files are fine to have there
   - If you need to have other folders in apache's root directory, you will need to add additional code in the script for error checking
-    - To get around this you need to add another nested if/else on line 88. This would basically be: if folder name matches (folder_to_keep or another_folder_to_keep) then do nothing. Otherwise, continue with commands to remove everything.
+    - To get around this you need to add another nested if/else on line 88. This would basically be: if folder name matches (folder_to_keep or another_folder_to_keep) then do nothing. Else, continue with commands to remove everything.
+    - Also, if you have additional folders in the Apache root directory that you want to keep, you will need to change the  variable "html". For example, say you have 2 other folders in /var/www/html/ that you don't want to be deleted. After the value of "html" is assigned on line 74, you will need to subtract 2 from that variable so it has only the number of folders that are/were students' folders.
 
 
 What these scripts do in detail:
