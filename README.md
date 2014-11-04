@@ -1,7 +1,7 @@
 Multi-WP-Script
 ===============
 
-The point of this script is to easily create multiple WordPress sites for multiple users on one server. There is a user list which the script checks. New users are added and anything not on the list is removed. Script also creates backups.
+The point of this script is to easily create multiple WordPress sites for multiple users on one server. There is a user list which the script checks. New users are set up automatically and anything not on the list is removed. Script also creates backups.
 
 I have this script running every night at 2AM by adding the following line to /etc/crontab:
 
