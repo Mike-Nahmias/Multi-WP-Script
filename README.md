@@ -7,7 +7,9 @@ I have this script running every night at 2AM by adding the following line to /e
 
 0  2  *  *  * root       ~/setup-accounts
 
+
 Important things to note:
+=========================
 - This script has only been tested on Centos 7
 - You will need to create the directory "/backups" if you plan on using that feature (Or you can modify the code to change the location completely)
 - The scripts need to be in the same location
