@@ -24,7 +24,54 @@ Important things to note:
 
 What these scripts do in detail and how to use them:
 ================================
-- Put whatever accounts you want to have setup on the box in the file "users"
+- Put whatever accounts you want to have setup on the server in the file "users"
+  - There are examples in that file already. Make sure to remove them when you add ones you want
 - Each account in "users" is checked one by one to see if it already exists
-- If nothing is set up for that person then the script downloads wordpress, creates an apache directory, creates a backup folder, creates a wordpress database and account with a random password, and a virtual host file.
-- The script then checks if 
+  - If it exists the program says the user already exists
+  - If nothing is set up for that user then the script does the following in order:
+    - Downloads wordpress
+    - Creates apache directory
+    - Copies wordpress to apache directory
+    - Creates backup folder
+    - Generates random 16 digit password for database account
+    - Creates database and account for wordpress to use (both are the name of the user)
+    - Sets password for account to random password and gives database account full rights to database
+    - Inputs the database name, account name, and account password into the wordpress config file
+    - Creates virtual host file
+    - Adds user to the array "add", which is used to send an email to notify admin to update DNS entries
+- The script then checks to see if there are more folders in the apache directory than there are users
+  - This would happen when a user is removed from the user list
+  - If there are more folders in the apache directory than there are users then the script does the following:
+    - Checks each folder in the apache directory one by one to see if there is a matching name in "users"
+      - If there isn't a matching name in "users" then the script does the following
+        - Tells you which user needs to be removed
+        - Deletes the apache directory
+        - Deletes the database and database account
+        - Deletes the virtual host file
+        - Adds user to the array "remove", which is used to send an email to notify admin to update DNS entries
+  - If there aren't more folderes in the apache directory than there are users then the script says everything is OK
+- Next, the script gives apache ownership of everything in the apache directory and the virtual host files
+- Refreshes the mysql privileges so everything takes effect immediately
+- Restarts apache so the virtual host files are loaded
+- Runs the backup script (Comment that line out if you don't want that script to be run)
+- Sends email to admin reporting users that need to be added or removed in DNS
+  - If the arrays "add" and "remove" are both empty then it does nothing
+  - If one of the arrays is empty it will set the empty one to "none" and then send an email
+- That's it, have fun
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
