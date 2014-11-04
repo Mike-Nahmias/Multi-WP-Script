@@ -23,6 +23,7 @@ Important things to note:
 
 
 What these scripts do in detail:
+================================
 - Put whatever accounts you want to have setup on the box in the file "students"
 - Each account in "students" is checked one by one to see if it already exists
 - If nothing is set up for that person then the script downloads wordpress, creates an apache directory, creates a backup folder, creates a wordpress database and account with a random password, and a virtual host file.
