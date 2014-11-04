@@ -7,7 +7,7 @@ wp=0
 declare -a add
 declare -a remove
 
-#Reads each line from the file "students" in the same directory that the script is running from. Each line is input
+#Reads each line from the file "users" in the same directory that the script is running from. Each line is input
 #into the variable "user" one by one.
 while read user
 do
@@ -67,23 +67,23 @@ do
 
                 echo Done
         fi
-done <students
+done <users
 
 
-students=$(more students | wc -l)
+users=$(cat users | wc -l)
 html=$(ls -d /var/www/html/*/ | wc -l)
 
-#Checks to see if there are more folders in the apache directory than there are students
+#Checks to see if there are more folders in the apache directory than there are users
 #This would happen when a student is removed from the class list
-if [ $students -lt $html ]; then
+if [ users -lt $html ]; then
 #There are apache folders that need to be removed. Let's find out which one
         echo There are unnecessary student folders in /var/www/html which need to be deleted. "Let's" figure out which "one(s)"...
 
         #Checking for existence of student with apache folder name one by one
         while read folder
         do
-                #searches the file students for the name of the apache folder
-                if ! grep -Fxq "$folder" students
+                #searches the file "users" for the name of the apache folder
+                if ! grep -Fxq "$folder" users
                 then
                         echo WE FOUND THE CULPRIT! Removing all traces of $folder ...
                         #Deletes the user's apache directory
@@ -105,7 +105,7 @@ if [ $students -lt $html ]; then
                 #Needed to use cut to extract only the folder names and not the whole paths
         done < <(ls -1d /var/www/html/*/ | cut -d '/' -f5)
 
-#There aren't less students than apache folders so we're good
+#There aren't less users than apache folders so we're good
 else
         echo Everything looks good!
 fi
