@@ -43,18 +43,18 @@ do
 
                 #Create a random 16 character password for the user's database account
                 pw=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c 16)
-
-                #Add database info to wordpress config in user's
-                sed -ie "s/database_name_here/$user/" /var/www/html/$user/wp-config.php
-                sed -ie "s/username_here/$user/" /var/www/html/$user/wp-config.php
-                sed -ie "s/password_here/$pw/" /var/www/html/$user/wp-config.php
-
+                
                 #Creates a database and a mysql account for the user. Sets the password to the random password
-                        #generated and grants them all privileges to their database
+                        #that was generated and grants them all privileges to their database
                 mysql -uroot -p$dbpw -e "create database $user"
                 mysql -uroot -p$dbpw -e "create user $user@localhost"
                 mysql -uroot -p$dbpw -e "set password for $user@localhost= password('$pw');"
                 mysql -uroot -p$dbpw -e "grant all privileges on $user.* to $user@localhost identified by '$pw'"
+                
+                #Add database info to wordpress config in user's
+                sed -ie "s/database_name_here/$user/" /var/www/html/$user/wp-config.php
+                sed -ie "s/username_here/$user/" /var/www/html/$user/wp-config.php
+                sed -ie "s/password_here/$pw/" /var/www/html/$user/wp-config.php
 
                 #Create Virtual Host file
                 echo "<VirtualHost *:80>" >>  /etc/httpd/conf.d/"$user".conf
