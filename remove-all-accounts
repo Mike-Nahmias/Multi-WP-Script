@@ -2,9 +2,6 @@
 
 dbpw=PW_FOR_DB_ROOT_USER_HERE
 
-#Removes the wordpress folder from extracting and the tar file downloaded
-rm -rf ~/wordpress
-rm -f ~/latest.tar.gz
 
 while read user
 do
