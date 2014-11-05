@@ -50,9 +50,12 @@ What these scripts do in detail and how to use them:
         - Deletes the virtual host file
         - Adds user to the array "remove", which is used to send an email to notify admin to update DNS entries
   - If there aren't more folderes in the apache directory than there are users then the script says everything is OK
-- Next, the script gives apache ownership of everything in the apache directory and the virtual host files
-- Refreshes the mysql privileges so everything takes effect immediately
-- Restarts apache so the virtual host files are loaded
+- If at least one user was added then the script does the following:
+  - Deletes the downloaded WordPress files
+  - Gives apache ownership of everything in the apache directory and the virtual host files
+- If at least one user was added or removed then the script does the following:
+  - Refreshes the mysql privileges so everything takes effect immediately
+  - Restarts apache so the virtual host files are loaded
 - Runs the backup script (Comment that line out if you don't want that script to be run)
   - The backup script creates a tar archive for the user's database and apache directory
   - If there are files in the user's backup directory that are older than 3 weeks they will be deleted.
