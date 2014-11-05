@@ -132,7 +132,7 @@ fi
 
 
 #Runs the backup script. Comment the following line if you don't want that script to be run
-#./backup
+./backup
 
 
 #Sends email reporting users that need to be added or removed in DNS
