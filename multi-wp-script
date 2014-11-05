@@ -7,6 +7,7 @@ wp=0
 declare -a add
 declare -a remove
 
+
 #Reads each line from the file "users" in the same directory that the script is running from. Each line is input
 #into the variable "user" one by one.
 while read user
@@ -22,12 +23,10 @@ do
                         #Kept track of with $wp
                 if [ $wp -eq 0 ]; then
                         echo -n Downloading and extracting latest version of WordPress ....." "
-                        rm -rf ~/wordpress
-                        rm -f ~/latest.tar.gz
                         wget -q http://wordpress.org/latest.tar.gz
                         tar xzf latest.tar.gz
                         cp ~/wordpress/wp-config-sample.php ~/wordpress/wp-config.php
-                        wp=$[$wp-1]
+                        wp=$[$wp+1]
                         echo Done
                 fi
 
@@ -43,15 +42,15 @@ do
 
                 #Create a random 16 character password for the user's database account
                 pw=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c 16)
-                
+
                 #Creates a database and a mysql account for the user. Sets the password to the random password
                         #that was generated and grants them all privileges to their database
                 mysql -uroot -p$dbpw -e "create database $user"
                 mysql -uroot -p$dbpw -e "create user $user@localhost"
                 mysql -uroot -p$dbpw -e "set password for $user@localhost= password('$pw');"
                 mysql -uroot -p$dbpw -e "grant all privileges on $user.* to $user@localhost identified by '$pw'"
-                
-                #Add database info to wordpress config in user's
+
+                #Add database info to wordpress config in user's apache directory
                 sed -ie "s/database_name_here/$user/" /var/www/html/$user/wp-config.php
                 sed -ie "s/username_here/$user/" /var/www/html/$user/wp-config.php
                 sed -ie "s/password_here/$pw/" /var/www/html/$user/wp-config.php
@@ -75,7 +74,7 @@ html=$(ls -d /var/www/html/*/ | wc -l)
 
 #Checks to see if there are more folders in the apache directory than there are users
 #This would happen when a user is removed from the user list
-if [ users -lt $html ]; then
+if [ $users -lt $html ]; then
 #There are apache folders that need to be removed. Let's find out which one
         echo There are unnecessary user folders in /var/www/html which need to be deleted. "Let's" figure out which "one(s)"...
 
@@ -111,16 +110,30 @@ else
 fi
 
 
-#Give apache ownership of everything in the apache directory and the virtual host files
-chown -R apache:apache /var/www/html/*
-chown -R apache:apache /etc/httpd/conf.d/*
-#Refresh the mysql privileges so everything takes effect immediately
-mysql -uroot -p$dbpw -e "flush privileges"
-#Restart apache so the virtual host files are loaded
-systemctl restart httpd.service
+#Runs if at least 1 user was added
+if [ $wp -eq 1 ]; then
+        #Deletes downloaded wordpress files
+        rm -rf ~/wordpress
+        rm -f ~/latest.tar.gz
+        #Give apache ownership of everything in the apache directory and the virtual host files
+        chown -R apache:apache /var/www/html/*
+        chown -R apache:apache /etc/httpd/conf.d/*
+fi
+
+
+#Runs if at least 1 user was added or removed
+if [ ! ${#add[*]} -eq 0 ] || [ ! ${#remove[*]} -eq 0 ]; then
+        #Refresh the mysql privileges so everything takes effect immediately
+        mysql -uroot -p$dbpw -e "flush privileges"
+        #Restart apache so the virtual host files are loaded
+        systemctl restart httpd.service
+fi
+
+
 
 #Runs the backup script. Comment the following line if you don't want that script to be run
-./backup
+#./backup
+
 
 #Sends email reporting users that need to be added or removed in DNS
 #If the arrays "add" and "remove" are both empty then it does nothing.
