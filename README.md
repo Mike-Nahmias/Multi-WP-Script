@@ -11,6 +11,7 @@ I have this script running every night at 2AM by adding the following line to /e
 Important things to note:
 =========================
 - This script has only been tested on Centos 7
+- Make sure you have your LAMP stack setup
 - You will need to create the directory "/backups" if you plan on using that feature (Or you can modify the code to change the location completely)
 - The scripts need to be in the same location
 - If you copy or download the scripts you will need to make them executable (chmod +x script_name) except for "users", that is just a text file
