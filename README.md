@@ -4,11 +4,9 @@ Multi-WP-Script
 The point of this script is to easily create multiple WordPress sites for multiple users on one server. There is a user list which the script checks. New users are set up automatically and anything no longer on the list is removed. The script also creates backups and sends an email to the admin to notify whether or not DNS entries need to be updated.
 
 I have this script running every night at 2AM by adding the following line to /etc/crontab:
-
 0  2  *  *  * root       ~/setup-accounts
 
-
-- Next on my list is to compile all scripts into one and make use of functions
+Next on my list is to compile all scripts into one and make use of functions
 
 
 Important things to note:
