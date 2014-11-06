@@ -8,6 +8,9 @@ I have this script running every night at 2AM by adding the following line to /e
 0  2  *  *  * root       ~/setup-accounts
 
 
+- Next on my list is to compile all scripts into one and make use of functions
+
+
 Important things to note:
 =========================
 - This script has only been tested on Centos 7
