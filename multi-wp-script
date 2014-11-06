@@ -71,37 +71,59 @@ done <users
 
 users=$(cat users | wc -l)
 html=$(ls -d /var/www/html/*/ | wc -l)
+#If you have other folders in /var/www/html then subtract the amount of other folders from $html like so:
+#$html=$[$html-2]
+
+
 
 #Checks to see if there are more folders in the apache directory than there are users
 #This would happen when a user is removed from the user list
 if [ $users -lt $html ]; then
-#There are apache folders that need to be removed. Let's find out which one
-        echo There are unnecessary user folders in /var/www/html which need to be deleted. "Let's" figure out which "one(s)"...
+        #There are apache folders that need to be removed. Let's find out which one(s)
 
-        #Checking for existence of user with apache folder name one by one
+        #Used to keep track of how many extra folders still need to be removed for efficiency
+        removed=$[$html - $users]
+
+        echo There are $removed unnecessary user folders in /var/www/html which need to be deleted. "Let's" figure out which "one(s)"...
+
+        #Checks each apache folder name one by one to see if it exists in the user list
         while read folder
         do
-                #searches the file "users" for the name of the apache folder
-                if ! grep -Fxq "$folder" users
-                then
-                        echo WE FOUND THE CULPRIT! Removing all traces of $folder ...
-                        #Deletes the user's apache directory
-                        rm -rf /var/www/html/$folder
+                if [ $removed -gt 0 ] ; then
+                        #Searches the file "users" for the name of the apache folder
+                        if ! grep -Fxq "$folder" users
+                        then
 
-                        #Deletes the user's database and mysql account
-                        mysql -uroot -p$dbpw -e "drop database $folder";
-                        mysql -uroot -p$dbpw -e "drop user $folder@localhost"
+                                #If you have other folders in /var/www/html then check for their names here so they don't get deleted. Don't forget to uncomment the following lines
+                                #if [ $folder = "foldername" ] || [ $folder = "anotherfolder" ] ; then
+                                #       echo Keeping $folder ...
+                                #else
+                                        echo Removing all traces of $folder ...
+                                        #Deletes the user's apache directory
+                                        rm -rf /var/www/html/$folder
 
-                        #Deletes the virtual host file for the user
-                        rm -f /etc/httpd/conf.d/"$folder".conf
+                                        #Deletes the user's database and mysql account
+                                        mysql -uroot -p$dbpw -e "drop database $folder";
+                                        mysql -uroot -p$dbpw -e "drop user $folder@localhost"
 
-                        #Adds user to array "remove". Used later to send email saying to remove entry for user in DNS
-                        remove+=("$folder")
+                                        #Deletes the virtual host file for the user
+                                        rm -f /etc/httpd/conf.d/"$folder".conf
 
-                        echo Done
+                                        #Adds user to array "remove". Used later to send email saying to remove entry for user in DNS
+                                        remove+=("$folder")
+
+                                        #One less user to remove
+                                        removed=$[$removed - 1]
+
+                                        echo Done
+                                #fi
+                        fi
+                else
+                        echo All extra users deleted
+                        break
                 fi
-        #This is listing all directories in /var/www/html line by line.
-                #Needed to use cut to extract only the folder names and not the whole paths
+
+        #This is listing all directories in /var/www/html line by line. Needed to use cut to extract only the folder names and not the whole paths
         done < <(ls -1d /var/www/html/*/ | cut -d '/' -f5)
 
 #There aren't less users than apache folders so we're good
@@ -144,7 +166,7 @@ if [ ! ${#add[*]} -eq 0 ] || [ ! ${#remove[*]} -eq 0 ]; then
         else
                 remove+=("none")
         fi
-        echo -e Add to DNS: ${add[*]} "\n"Remove from DNS: ${remove[*]} | mail -s "Update DNS for WordPress Server" email@example.com
+        echo -e Add to DNS: ${add[*]} "\n"Remove from DNS: ${remove[*]} | mail -s "Update DNS for WordPress Server" admin@example.com
         echo Email sent!
 fi
 
