@@ -11,16 +11,23 @@ I have this script running every night at 2AM by adding the following line to /e
 Important things to note:
 =========================
 - This script has only been tested on Centos 7
-- Make sure you have your LAMP stack setup
+- Make sure you have your LAMP stack set up properly
 - You will need to create the directory "/backups" if you plan on using that feature (Or you can modify the code to change the location completely)
 - The scripts need to be in the same location
 - If you copy or download the scripts you will need to make them executable (chmod +x script_name) except for "users", that is just a text file
-- MAKE SURE YOU DON'T HAVE ANY OTHER FOLDERS IN /var/www/html/
-  - This script will delete any folders in that directory that don't match the user list
-  - Files are fine to have there
-  - If you need to have other folders in apache's root directory, you will need to add additional code in the script for error checking
-    - To get around this you need to add another nested if/else on line 88. This would basically be: if folder name matches (folder_to_keep or another_folder_to_keep) then do nothing. Else, continue with commands to remove everything.
-    - Also, if you have additional folders in the Apache root directory that you want to keep, you will need to change the  variable "html". For example, say you have 2 other folders in /var/www/html/ that you don't want to be deleted. After the value of "html" is assigned on line 74, you will need to subtract 2 from that variable so it has only the number of folders that are/were users' folders.
+- Before you run the scripts you have to edit lines:
+  - 3, 60, and 169 in multi-wp-script
+  - 3 in backup and remove-all-accounts
+- *IF YOU HAVE ANY OTHER FOLDERS IN /var/www/html/ DO THE FOLLOWING*
+  - This script will delete any folders in that directory that don't match the user list (files are fine to have there)
+  - I have already added and commented out additional code in the script to check for folders you want to keep
+  - Uncomment/change the following lines in multi-wp-script
+    - Line 75, uncomment and change 2 to however many folders you want to keep
+    - Line 98, uncomment and change the text inside of quotes to the name of your folder(s)
+      - If you only have one folder to keep remove " || [ $folder = "anotherfolder" ] "
+      - If you have more than two foldres to keep follow the structure already there so it looks like this and so on:
+        - if [ $folder = "foldername" ] || [ $folder = "anotherfolder" ] || [ $folder = "foldername3" ] ; then
+    - Uncomment lines 99, 100, and 119
 
 
 What these scripts do in detail and how to use them:
