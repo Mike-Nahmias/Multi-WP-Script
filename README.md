@@ -18,7 +18,7 @@ Important things to note:
 - Before you run the scripts you have to edit lines:
   - 3, 60, and 169 in multi-wp-script
   - 3 in backup and remove-all-accounts
-- *IF YOU HAVE ANY OTHER FOLDERS IN /var/www/html/ DO THE FOLLOWING*
+- **IF YOU HAVE ANY OTHER FOLDERS IN /var/www/html/ DO THE FOLLOWING**
   - This script will delete any folders in that directory that don't match the user list (files are fine to have there)
   - I have already added and commented out additional code in the script to check for folders you want to keep
   - Uncomment/change the following lines in multi-wp-script
