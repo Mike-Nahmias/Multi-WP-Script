@@ -5,7 +5,7 @@ The point of this script is to easily create multiple WordPress sites for multip
 
 I have this script running every night at 2AM by adding the following line to /etc/crontab:
 
-0  2  *  *  * root       ~/setup-accounts
+0  2  *  *  * root       ~/multi-wp-script
 
 Next on my list is to compile all scripts into one and make use of functions
 
