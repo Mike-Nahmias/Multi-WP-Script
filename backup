@@ -15,5 +15,14 @@ do
 done < <(ls -1d /var/www/html/*/ | cut -d '/' -f5)
 
 
-#Deletes anything in the /backups folder that is a file (as opposed to a directory) and is 3 weeks old
-find /backups -type f -mmin +30240 -delete
+#Cleanup! If a user has more than 4 files in their backup directory, anything older than 3 weeks will be deleted
+#This way, even if users no longer have hosting, there will still be 2 complete backups of their files
+while read folder
+do
+        num=$(ls /backups/$folder/ | wc -l)
+
+        if [ $num -gt 4 ]; then
+                find /backups/$folder -type f -mmin +30240 -delete
+        fi
+
+done < <(ls -1d /backups/* | cut -d '/' -f3)
